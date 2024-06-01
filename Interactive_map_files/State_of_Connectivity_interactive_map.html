@@ -1,0 +1,202 @@
+<!-- This HTML file is for an interactive leaflet map with map tiles, vectors, and popups -->
+<html>
+<head>
+    <title>State of Connectivity</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/L.Control.Layers.Tree.css"> <!-- Correct path to L.Control.Layers.Tree.css -->
+    <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+    <script src="https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/L.Control.Layers.Tree.js"></script> <!-- Correct path to L.Control.Layers.Tree.js -->
+</head>
+<body>
+
+<!-- Specify the size of your leaflet map compared to the screen -->
+<div style="width:100%; height:100%" id="map"></div>
+
+<script type="text/javascript" src='https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/IBRA_clips/add_ons/IBRA_regions_simplified_100m.js'></script>
+
+<!-- Here is the leaflet javascript part -->
+<script type='text/javascript'>
+    // Create the leaflet map
+    var map = L.map('map', {
+        center: L.latLng(-27.92, 133.3),
+        zoom: 4,
+        maxZoom: 10
+    });
+
+    // Setting the styles of each of the polygons
+    function IBRA_reg_style(feature1) {
+        return {
+            weight: 1,
+            opacity: 1,
+            color: '#000000',
+            fillOpacity: 0.05
+        };
+    }
+
+    // Organisation Icons
+    var GER_imageUrl = 'https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/IBRA_clips/add_ons/GER_logo_w_buffer.png';
+    var GL_imageUrl = 'https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/IBRA_clips/add_ons/GL_logo_rescaled.png';
+
+    // IBRA popup
+    function onEachFeature_IBRA(feature1, layer1) {
+        var orgs = feature1.properties.Org;
+        var prds = ['Gondwana Link', 'Great Eastern Ranges'];
+        var prd_index = prds.indexOf(orgs);
+        var images = [GL_imageUrl, GER_imageUrl];
+        layer1.bindPopup('<img src=' + images[prd_index] + ' width="300"></img><h3>IBRA region: ' + feature1.properties.REG_NAME_7 + '</h3><a href=' + feature1.properties.URL + '>Download connectivity layers</a>', {
+            maxWidth: 650
+        });
+    }
+
+    // The geoJSON javascript
+    var geojson1 = L.geoJson(IBRA_regions_simplified_100m, {
+        style: IBRA_reg_style,
+        onEachFeature: onEachFeature_IBRA
+    }).addTo(map);
+
+    // Legend specific
+    var legend = L.control({ position: "bottomleft" });
+
+    legend.onAdd = function(map) {
+        var div = L.DomUtil.create("div", "legend");
+        div.innerHTML += "<h3>Legend</h3>";
+        div.innerHTML += '<i style="background: #428004"></i><span>Protected areas<br>';
+        div.innerHTML += '<i style="background: black"></i><span>Bioregions (IBRA)</span><br>';
+        div.innerHTML += "<h4>Corridor importance</h4>";
+        div.innerHTML += '<i style="background: #d7191c"></i><span>Low</span><br>';
+        div.innerHTML += '<i style="background: #fdae61"></i><span>Moderate-low</span><br>';
+        div.innerHTML += '<i style="background: #ffffbf"></i><span>Moderate</span><br>';
+        div.innerHTML += '<i style="background: #abdda4"></i><span>Moderate-high</span><br>';
+        div.innerHTML += '<i style="background: #2b83ba"></i><span>High</span><br>';
+        div.innerHTML += '<i style="background: #013CFF"></i><span>99.9th percentile</span><br>';
+        return div;
+    };
+    legend.addTo(map);
+
+    var starting_layer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {attribution: 'Source: Esri'}).addTo(map),
+        grayscale = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: 'Source: OpenStreetMap'});
+
+    var Landscape_level = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/landscape_level_forest_patch_connection/{z}/{x}/{-y}.png').addTo(map),
+        Landscape_level_important_pathways = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/landscape_level_connectivity_99_9_rendered/{z}/{x}/{-y}.png'),
+        Frugivorous_pigeons = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/Rainforest_pigeons_LCP/{z}/{x}/{-y}.png'),
+        Frugivorous_pigeons_important_pathways = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/rainforest_pigeon_connectivity_99_9_rendered/{z}/{x}/{-y}.png'),
+        Gliding_possums = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/Squirrel_glider_LCP/{z}/{x}/{-y}.png'),
+        Gliding_possums_important_pathways = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/gliding_possum_connectivity_99_9_rendered/{z}/{x}/{-y}.png'),
+        Glossy_Black = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/GBC_SEQ_LCP/{z}/{x}/{-y}.png'),
+        Glossy_Black_important_pathways = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/glossy_black_connectivity_99_9_rendered/{z}/{x}/{-y}.png'),
+        Black_cockatoos = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/GL_connectivity_map/swWA_black_cockatoos_LCP/{z}/{x}/{-y}.png'),
+        Black_cockatoos_important_pathways = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/swWA_cockatoo_connectivity_99_9_rendered/{z}/{x}/{-y}.png'),
+        Protected_areas = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/PAs/{z}/{x}/{-y}.png'),
+        Landscape_level_IIC = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/Forest_landscape_patch_connectivity_IIC_rendered/{z}/{x}/{-y}.png'),
+        Frugivorous_pigeons_IIC = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/Frugivorous_pigeons_patch_connectivity_IIC_rendered/{z}/{x}/{-y}.png'),
+        Gliding_possums_IIC = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/Gliding_possum_patch_connectivity_IIC_rendered/{z}/{x}/{-y}.png'),
+        Glossy_black_SEQ_IIC = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/Glossy_black_SEQ_patch_connectivity_IIC_rendered/{z}/{x}/{-y}.png'),
+        SW_Black_cockatoo_IIC = L.tileLayer('https://interactivemapaustralia.s3.ap-southeast-2.amazonaws.com/GER_connectivity_interactive_map/Species_guild_maps/SW_Black_cockatoo_patch_connectivity_IIC_rendered/{z}/{x}/{-y}.png');
+
+    var baseMaps = {
+        "Satellite imagery": starting_layer,
+        "Streets": grayscale
+    };
+
+    var overlayTree = {
+        label: 'Layers',
+        children: [
+            {
+                label: 'Basemaps',
+                children: [
+                    { label: 'Satellite imagery', layer: starting_layer },
+                    { label: 'Streets', layer: grayscale },
+                    { label: 'Bioregions', layer: geojson1 },
+                    { label: 'Protected areas', layer: Protected_areas }
+                ]
+            },
+            {
+                label: 'Optimum Connectivity Pathways',
+                children: [
+                    { label: 'Landscape level connectivity', layer: Landscape_level },
+                    { label: 'Frugivorous pigeons', layer: Frugivorous_pigeons },
+                    { label: 'Gliding possums', layer: Gliding_possums },
+                    { label: 'Glossy Black Cockatoos (SEQ)', layer: Glossy_Black },
+                    { label: 'Black Cockatoos of WA', layer: Black_cockatoos }
+                ]
+            },
+            {
+                label: 'Important Pathways',
+                children: [
+                    { label: 'Landscape level connectivity - Important pathways', layer: Landscape_level_important_pathways },
+                    { label: 'Frugivorous pigeons - Important pathways', layer: Frugivorous_pigeons_important_pathways },
+                    { label: 'Gliding possums - Important pathways', layer: Gliding_possums_important_pathways },
+                    { label: 'Glossy Black Cockatoos (SEQ) - Important pathways', layer: Glossy_Black_important_pathways },
+                    { label: 'Black Cockatoos of WA - Important pathways', layer: Black_cockatoos_important_pathways },
+                ]
+            },
+            {
+                label: 'Patch Connectivity',
+                children: [
+                    { label: 'Landscape patch connectivity', layer: Landscape_level_IIC },
+                    { label: 'Frugivorous pigeon patch connectivity', layer: Frugivorous_pigeons_IIC },
+                    { label: 'Gliding possums patch connectivity', layer: Gliding_possums_IIC },
+                    { label: 'Glossy Black Cockatoos (SEQ) patch connectivity', layer: Glossy_black_SEQ_IIC },
+                    { label: 'Black Cockatoos of WA patch connectivity', layer: SW_Black_cockatoo_IIC }
+                ]
+            }
+        ]
+    };
+
+    // Add the grouped layers control to the map
+    L.control.layers.tree(baseMaps, overlayTree).addTo(map);
+    map.fitBounds(geojson1.getBounds());
+
+    L.control.scale({ position: "bottomright", imperial: false, maxWidth: 150 }).addTo(map);
+</script>
+
+<div id="l">
+    <style type="text/css">
+        .legend {
+            padding: 8px 8px;
+            font: 14px Arial, Helvetica, sans-serif;
+            background: rgba(255, 255, 255, 0.8);
+            line-height: 30px;
+            color: #555;
+            border-style: solid;
+            border-color: black;
+            border-radius: 25px;
+        }
+
+        .legend h4 {
+            text-align: center;
+            font-size: 16px;
+            margin: 2px 5px 5px;
+            color: rgb(87, 86, 86);
+        }
+
+        .legend h3 {
+            text-align: center;
+            font-size: 18px;
+            margin: 2px 5px 5px;
+            color: rgb(87, 86, 86);
+        }
+
+        .legend span {
+            position: relative;
+            bottom: 5px;
+        }
+
+        .legend i {
+            width: 23px;
+            height: 23px;
+            float: left;
+            margin: 0 8px 0 0;
+            opacity: 1;
+        }
+
+        .legend i.icon {
+            background-size: 22px;
+            background-color: rgba(255, 255, 255, 0);
+        }
+    </style>
+</div>
+
+</body>
+</html>
